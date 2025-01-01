@@ -159,48 +159,48 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCart();
 });
 
-// 動態廣告輪播
+// 動態輪播
 document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
-    const slides = document.querySelectorAll('.ad-slide');
+    const slides = document.querySelectorAll('.slide');
     const totalSlides = slides.length;
     const intervalTime = 5000; // 自動切換時間（毫秒）
 
-    // 顯示當前幻燈片
     function showSlide(index) {
         slides.forEach((slide, i) => {
-            slide.classList.toggle('active', i === index);
+            const parentLink = slide.parentElement;
+            if (parentLink.tagName === 'A') {
+                parentLink.classList.toggle('active', i === index);
+            }
         });
     }
+    
 
-    // 自動切換幻燈片
     let slideInterval = setInterval(() => {
         currentIndex = (currentIndex + 1) % totalSlides;
         showSlide(currentIndex);
     }, intervalTime);
 
-    // 手動切換功能
-    document.querySelector('.ad-prev').addEventListener('click', () => {
-        clearInterval(slideInterval); // 清除自動切換
+    document.querySelector('.prev-button').addEventListener('click', () => {
+        clearInterval(slideInterval);
         currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
         showSlide(currentIndex);
         slideInterval = setInterval(() => {
             currentIndex = (currentIndex + 1) % totalSlides;
             showSlide(currentIndex);
-        }, intervalTime); // 恢復自動切換
+        }, intervalTime);
     });
 
-    document.querySelector('.ad-next').addEventListener('click', () => {
-        clearInterval(slideInterval); // 清除自動切換
+    document.querySelector('.next-button').addEventListener('click', () => {
+        clearInterval(slideInterval);
         currentIndex = (currentIndex + 1) % totalSlides;
         showSlide(currentIndex);
         slideInterval = setInterval(() => {
             currentIndex = (currentIndex + 1) % totalSlides;
             showSlide(currentIndex);
-        }, intervalTime); // 恢復自動切換
+        }, intervalTime);
     });
 
-    // 初始化顯示第一張幻燈片
     showSlide(currentIndex);
 });
 
@@ -297,5 +297,114 @@ function renderCheckoutCart() {
 document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('checkout.html')) {
         renderCheckoutCart();
+    }
+});
+
+// 在頁面載入時檢查登入狀態
+document.addEventListener('DOMContentLoaded', () => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const currentPath = window.location.pathname;
+
+    // 若未登入且目前頁面不是 auth.html，導向登入頁
+    if (!isLoggedIn && !currentPath.includes('auth.html')) {
+        window.location.href = 'auth.html';
+    }
+});
+
+// 在 profile.html 加載使用者名稱與資料
+function displayUserProfile() {
+    const userProfile = JSON.parse(localStorage.getItem('profile'));
+
+    if (userProfile) {
+        document.getElementById('name').value = userProfile.name || '';
+        document.getElementById('phone').value = userProfile.phone || '';
+        document.getElementById('address').value = userProfile.address || '';
+        document.getElementById('credit-card').value = userProfile.creditCard || '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('profile.html')) {
+        displayUserProfile();
+    }
+});
+
+document.getElementById('profile-form')?.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const creditCard = document.getElementById('credit-card').value.trim();
+
+    const userProfile = { name, phone, address, creditCard };
+    localStorage.setItem('profile', JSON.stringify(userProfile));
+
+    alert('會員資料已更新！');
+});
+
+function updateHeaderWithUserName() {
+    const userProfile = JSON.parse(localStorage.getItem('profile'));
+    const userName = userProfile?.name || '訪客';
+
+    const headerRight = document.querySelector('.header-right');
+    if (headerRight) {
+        const userNameDisplay = document.createElement('span');
+        userNameDisplay.textContent = `您好, ${userName}`;
+        userNameDisplay.style.marginLeft = '10px';
+        userNameDisplay.style.color = 'white';
+        headerRight.appendChild(userNameDisplay);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+        updateHeaderWithUserName();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const stars = document.querySelectorAll('.rating-stars span');
+    let selectedRating = 0;
+
+    stars.forEach(star => {
+        // 滑鼠移入時高亮當前星星及之前的星星
+        star.addEventListener('mouseover', () => {
+            const value = parseInt(star.getAttribute('data-value'));
+            highlightStars(value);
+        });
+
+        // 滑鼠移出時恢復到選擇的評分狀態
+        star.addEventListener('mouseout', () => {
+            resetStars();
+            if (selectedRating > 0) {
+                highlightStars(selectedRating);
+            }
+        });
+
+        // 點擊選擇評分
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.getAttribute('data-value'));
+            resetStars();
+            highlightStars(selectedRating);
+        });
+    });
+
+    // 高亮星星
+    function highlightStars(value) {
+        stars.forEach(star => {
+            if (parseInt(star.getAttribute('data-value')) <= value) {
+                star.classList.add('selected');
+            } else {
+                star.classList.remove('selected');
+            }
+        });
+    }
+
+    // 清除所有高亮
+    function resetStars() {
+        stars.forEach(star => {
+            star.classList.remove('selected');
+        });
     }
 });
