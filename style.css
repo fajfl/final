@@ -709,7 +709,7 @@ html {
     min-width: 250px;
     /* 避免過小 */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 500px;
+    height: 600px;
 }
 
 .team-card:hover {
