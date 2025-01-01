@@ -158,52 +158,70 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('product.html')) initializeSampleReviews();
     renderCart();
 });
+// carousel.js
+class Carousel {
+    constructor(options = {}) {
+        this.currentIndex = 0;
+        this.slides = document.querySelectorAll('.slide');
+        this.totalSlides = this.slides.length;
+        this.intervalTime = options.intervalTime || 5000;
+        this.slideInterval = null;
 
-// 動態輪播
-document.addEventListener('DOMContentLoaded', () => {
-    let currentIndex = 0;
-    const slides = document.querySelectorAll('.slide');
-    const totalSlides = slides.length;
-    const intervalTime = 5000; // 自動切換時間（毫秒）
+        this.init();
+    }
 
-    function showSlide(index) {
-        slides.forEach((slide, i) => {
-            const parentLink = slide.parentElement;
-            if (parentLink.tagName === 'A') {
-                parentLink.classList.toggle('active', i === index);
-            }
+    init() {
+        this.showSlide(this.currentIndex);
+        this.startAutoPlay();
+        this.bindEvents();
+    }
+
+    showSlide(index) {
+        this.slides.forEach((slide, i) => {
+            slide.style.display = i === index ? 'block' : 'none';
+            slide.classList.toggle('active', i === index);
         });
     }
-    
 
-    let slideInterval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % totalSlides;
-        showSlide(currentIndex);
-    }, intervalTime);
+    startAutoPlay() {
+        if (this.slideInterval) {
+            clearInterval(this.slideInterval);
+        }
 
-    document.querySelector('.prev-button').addEventListener('click', () => {
-        clearInterval(slideInterval);
-        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-        showSlide(currentIndex);
-        slideInterval = setInterval(() => {
-            currentIndex = (currentIndex + 1) % totalSlides;
-            showSlide(currentIndex);
-        }, intervalTime);
+        this.slideInterval = setInterval(() => {
+            this.currentIndex = (this.currentIndex + 1) % this.totalSlides;
+            this.showSlide(this.currentIndex);
+        }, this.intervalTime);
+    }
+
+    bindEvents() {
+        const prevBtn = document.querySelector('.prev-button');
+        const nextBtn = document.querySelector('.next-button');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                this.currentIndex = (this.currentIndex - 1 + this.totalSlides) % this.totalSlides;
+                this.showSlide(this.currentIndex);
+                this.startAutoPlay();
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                this.currentIndex = (this.currentIndex + 1) % this.totalSlides;
+                this.showSlide(this.currentIndex);
+                this.startAutoPlay();
+            });
+        }
+    }
+}
+
+// 初始化輪播
+document.addEventListener('DOMContentLoaded', () => {
+    new Carousel({
+        intervalTime: 5000
     });
-
-    document.querySelector('.next-button').addEventListener('click', () => {
-        clearInterval(slideInterval);
-        currentIndex = (currentIndex + 1) % totalSlides;
-        showSlide(currentIndex);
-        slideInterval = setInterval(() => {
-            currentIndex = (currentIndex + 1) % totalSlides;
-            showSlide(currentIndex);
-        }, intervalTime);
-    });
-
-    showSlide(currentIndex);
 });
-
 function removeFromCart(productId) {
     // 移除指定商品
     cart = cart.filter(item => item.id !== productId);
